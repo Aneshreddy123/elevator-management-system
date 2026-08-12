@@ -1,0 +1,75 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    container_name: elevator-app
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: elevatordb
+      DB_USERNAME: elevator_user
+      DB_PASSWORD: elevator_pass
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      JWT_SECRET: ChangeThisSecretInProductionToSomethingLongAndRandom123456
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+    networks:
+      - elevator-net
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: elevator-postgres
+    environment:
+      POSTGRES_DB: elevatordb
+      POSTGRES_USER: elevator_user
+      POSTGRES_PASSWORD: elevator_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - elevator-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: elevator-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - elevator-net
+
+  # Official Apache Kafka image running in KRaft mode (no Zookeeper needed).
+  # Chosen over confluentinc/cp-kafka because that image has a known Java
+  # runtime incompatibility on Apple Silicon (arm64) Macs.
+  kafka:
+    image: apache/kafka:3.7.0
+    container_name: elevator-kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    networks:
+      - elevator-net
+
+networks:
+  elevator-net:
+    driver: bridge
+
+volumes:
+  postgres-data:

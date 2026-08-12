@@ -1,0 +1,95 @@
+{
+  "info": {
+    "name": "Elevator Management System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "adminToken", "value": "" },
+    { "key": "passengerToken", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth - Admin Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/auth/login",
+        "body": { "mode": "raw", "raw": "{\"username\":\"admin\",\"password\":\"admin123\"}" }
+      }
+    },
+    {
+      "name": "Auth - Passenger Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/auth/login",
+        "body": { "mode": "raw", "raw": "{\"username\":\"passenger\",\"password\":\"passenger123\"}" }
+      }
+    },
+    {
+      "name": "Request an Elevator",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{passengerToken}}" }
+        ],
+        "url": "{{baseUrl}}/api/elevators/request",
+        "body": { "mode": "raw", "raw": "{\"requestFloor\":1,\"destinationFloor\":8,\"direction\":\"UP\"}" }
+      }
+    },
+    {
+      "name": "Get Status of All Elevators",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{passengerToken}}" }],
+        "url": "{{baseUrl}}/api/elevators/status"
+      }
+    },
+    {
+      "name": "Manually Assign Elevator (Admin)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "url": "{{baseUrl}}/api/elevators/1/assign",
+        "body": { "mode": "raw", "raw": "{\"targetFloor\":6}" }
+      }
+    },
+    {
+      "name": "Simulate Elevator Movement",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{passengerToken}}" }],
+        "url": "{{baseUrl}}/api/elevators/simulate?elevatorId=1"
+      }
+    },
+    {
+      "name": "Get Elevator Logs (paginated)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{passengerToken}}" }],
+        "url": "{{baseUrl}}/api/elevators/logs?page=0&size=10"
+      }
+    },
+    {
+      "name": "Repair / Fault Auto-Recovery (Admin)",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+        "url": "{{baseUrl}}/api/elevators/1/repair"
+      }
+    },
+    {
+      "name": "Optimize Routes Based on Traffic (Admin)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+        "url": "{{baseUrl}}/api/elevators/optimize"
+      }
+    }
+  ]
+}
