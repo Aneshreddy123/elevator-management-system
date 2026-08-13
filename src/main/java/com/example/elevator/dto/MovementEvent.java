@@ -6,6 +6,15 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
+/**
+ * The message payload published to the {@code elevator-movement-events}
+ * Kafka topic by {@link com.example.elevator.service.KafkaMovementProducer}
+ * and consumed by {@link com.example.elevator.service.KafkaMovementConsumer}
+ * to write an {@link com.example.elevator.entity.ElevatorLog} entry.
+ * A dedicated typed class (rather than a raw Map) is required here so
+ * Spring Kafka's JSON deserializer can trust and deserialize it - see
+ * spring.json.trusted.packages in application.yml.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

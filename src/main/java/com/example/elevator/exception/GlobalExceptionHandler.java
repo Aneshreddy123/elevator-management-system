@@ -12,6 +12,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.stream.Collectors;
 
+/**
+ * Central exception-to-HTTP-response mapping for the whole API.
+ * Ensures every failure mode (bad input, missing resource, faulted
+ * elevator, open circuit breaker, unexpected error) comes back as a
+ * consistent {@link com.example.elevator.dto.ApiError} JSON body instead
+ * of a raw stack trace leaking to the client.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 

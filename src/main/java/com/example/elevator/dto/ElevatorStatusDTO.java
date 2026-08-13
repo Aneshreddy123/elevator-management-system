@@ -9,6 +9,12 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
+/**
+ * Read-only projection of an {@link com.example.elevator.entity.Elevator}
+ * returned by GET /api/elevators/status and GET /api/elevators/optimize.
+ * Kept separate from the entity so the Redis-cached response never leaks
+ * JPA internals (lazy collections, proxies) and stays cheap to (de)serialize.
+ */
 @Data
 @Builder
 @NoArgsConstructor

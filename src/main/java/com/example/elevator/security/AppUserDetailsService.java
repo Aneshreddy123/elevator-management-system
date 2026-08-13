@@ -41,11 +41,13 @@ public class AppUserDetailsService implements UserDetailsService {
                 .build();
     }
 
+    /** Used by {@link com.example.elevator.controller.AuthController} to embed the role claim in the JWT. */
     public String getRole(String username) {
         String[] record = users.get(username);
         return record != null ? record[1] : null;
     }
 
+    /** Used by {@link com.example.elevator.controller.AuthController} to verify login credentials before issuing a token. */
     public boolean matches(String username, String rawPassword) {
         String[] record = users.get(username);
         return record != null && passwordEncoder.matches(rawPassword, record[0]);

@@ -6,6 +6,12 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+/**
+ * A single passenger call: "I'm at requestFloor, I want to go to
+ * destinationFloor, heading direction." Created by
+ * {@link com.example.elevator.controller.ElevatorController#requestElevator}
+ * and linked to whichever elevator the scheduler assigns.
+ */
 @Entity
 @Table(name = "elevator_requests")
 @Getter

@@ -15,6 +15,14 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Runs once per request: reads the "Authorization: Bearer <token>" header,
+ * validates it via {@link JwtUtil}, and - if valid - populates the
+ * SecurityContext with an authenticated principal carrying a single
+ * ROLE_* authority. Requests with no/invalid token simply fall through
+ * unauthenticated and get rejected later by the authorization rules in
+ * {@link SecurityConfig}.
+ */
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {

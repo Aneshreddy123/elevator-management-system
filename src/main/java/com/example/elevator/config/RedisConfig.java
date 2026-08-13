@@ -15,6 +15,12 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
 
+/**
+ * Wires up Redis as the Spring Cache provider (powers @Cacheable on
+ * GET /api/elevators/status) with a short TTL so cached fleet status
+ * never goes too stale, and a JSON serializer (with the JavaTime module
+ * registered) so LocalDateTime fields serialize cleanly.
+ */
 @Configuration
 @EnableCaching
 public class RedisConfig {

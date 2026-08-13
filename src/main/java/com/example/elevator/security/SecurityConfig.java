@@ -43,18 +43,26 @@ public class SecurityConfig {
         return provider;
     }
 
+    /**
+     * Defines the HTTP security rules. Order matters here: Spring Security
+     * evaluates requestMatchers top-to-bottom and stops at the first match,
+     * so the ADMIN-only rules for assign/repair/optimize must come before
+     * the general "any authenticated user" rule for the rest of /api/elevators/**.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
+            .csrf(csrf -> csrf.disable()) // stateless JWT API - no browser session/cookies to protect
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**").permitAll()
+                .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
+                // admin-only actions - must be declared before the broader /api/elevators/** rule below
                 .requestMatchers("PUT", "/api/elevators/*/assign").hasRole("ADMIN")
                 .requestMatchers("PUT", "/api/elevators/*/repair").hasRole("ADMIN")
                 .requestMatchers("GET", "/api/elevators/optimize").hasRole("ADMIN")
+                // everything else under /api/elevators/** just needs to be authenticated (admin or passenger)
                 .requestMatchers("/api/elevators/**").hasAnyRole("ADMIN", "PASSENGER")
                 .anyRequest().authenticated()
             )

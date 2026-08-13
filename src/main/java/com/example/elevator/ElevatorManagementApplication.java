@@ -5,6 +5,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+/**
+ * Application entry point.
+ *
+ * {@code @EnableAsync} powers the fire-and-forget movement simulation in
+ * {@link com.example.elevator.service.ElevatorService#simulateMovement}.
+ * {@code @EnableScheduling} powers the watchdog health-check job that
+ * auto-recovers faulted elevators.
+ */
 @SpringBootApplication
 @EnableAsync
 @EnableScheduling

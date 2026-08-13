@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/** Login credentials posted to POST /api/auth/login. */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -9,6 +9,13 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents a single physical elevator car in the building.
+ *
+ * Implements {@link Serializable} because instances are stored in the Redis
+ * status cache (see {@link com.example.elevator.config.RedisConfig}) and
+ * carried across Kafka/JSON boundaries via {@link com.example.elevator.dto.ElevatorStatusDTO}.
+ */
 @Entity
 @Table(name = "elevators")
 @Getter
@@ -43,6 +50,11 @@ public class Elevator implements Serializable {
     @Builder.Default
     private List<ElevatorRequest> requests = new ArrayList<>();
 
+    /**
+     * Number of requests currently queued against this elevator.
+     * Used by {@link com.example.elevator.service.ElevatorSchedulingService}
+     * to penalize already-busy elevators for load balancing.
+     */
     public int activeLoad() {
         return requests == null ? 0 : requests.size();
     }

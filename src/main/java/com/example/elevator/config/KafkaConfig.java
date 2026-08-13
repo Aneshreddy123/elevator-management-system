@@ -6,6 +6,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
 
+/**
+ * Declares the Kafka topic used for elevator movement events. Spring Kafka's
+ * auto-configured KafkaAdmin picks this bean up and creates the topic on
+ * startup if it doesn't already exist.
+ */
 @Configuration
 public class KafkaConfig {
 

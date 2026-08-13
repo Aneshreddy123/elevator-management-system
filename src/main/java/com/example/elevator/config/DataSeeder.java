@@ -11,6 +11,12 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
+/**
+ * Dev-only convenience: pre-populates 4 idle elevators on startup so you
+ * can hit the API immediately without manually inserting rows. Only active
+ * under the "dev" profile (H2) - the "prod" profile (docker-compose,
+ * Postgres) intentionally starts with an empty fleet.
+ */
 @Component
 @Profile("dev")
 @RequiredArgsConstructor

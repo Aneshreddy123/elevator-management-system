@@ -23,6 +23,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Core business logic for the elevator system - the orchestrator that ties
+ * together the scheduling algorithm, persistence, Redis caching, the
+ * Kafka movement-event pipeline, and fault recovery. Each public method
+ * here backs one endpoint in {@link com.example.elevator.controller.ElevatorController}.
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -36,6 +42,12 @@ public class ElevatorService {
 
     // ---------- Request an elevator (passenger call) ----------
 
+    /**
+     * Handles a passenger call: runs the MinHeap scheduler over every
+     * elevator to pick the best fit, persists the request against it, and
+     * (if that elevator was idle) kicks it into MOVING state toward the
+     * caller's floor. Invalidates the status cache since fleet state changed.
+     */
     @Transactional
     @CacheEvict(value = "elevatorStatus", allEntries = true)
     public ElevatorRequest requestElevator(ElevatorRequestDTO dto) {
@@ -72,6 +84,12 @@ public class ElevatorService {
 
     // ---------- Status of all elevators (Redis cached) ----------
 
+    /**
+     * Returns the whole fleet's status. Cached in Redis under a single
+     * "all" key with a short TTL (see application.yml) since this is a
+     * hot-path read; any write elsewhere in this class evicts the cache
+     * so status never returns stale data for longer than one write cycle.
+     */
     @Cacheable(value = "elevatorStatus", key = "'all'")
     public List<ElevatorStatusDTO> getAllStatuses() {
         log.debug("Cache miss - loading elevator statuses from DB");
@@ -80,6 +98,7 @@ public class ElevatorService {
 
     // ---------- Manual admin assignment ----------
 
+    /** Admin override: force a specific elevator to a target floor, bypassing the scheduler. */
     @Transactional
     @CacheEvict(value = "elevatorStatus", allEntries = true)
     public Elevator manualAssign(Long elevatorId, int targetFloor) {
@@ -96,6 +115,15 @@ public class ElevatorService {
 
     // ---------- Simulate movement (async, circuit-breaker protected) ----------
 
+    /**
+     * Advances an elevator one floor toward its target, runs off the async
+     * executor so the HTTP request returns immediately (see the 202
+     * Accepted response in the controller), and publishes a Kafka event
+     * for whatever moved. Wrapped in a circuit breaker: if this method
+     * keeps failing (e.g. repeated faults), Resilience4j trips the breaker
+     * and routes calls to {@link #simulateMovementFallback} instead of
+     * hammering a broken elevator.
+     */
     @Async
     @CircuitBreaker(name = "elevatorService", fallbackMethod = "simulateMovementFallback")
     @CacheEvict(value = "elevatorStatus", allEntries = true)
@@ -124,6 +152,12 @@ public class ElevatorService {
         return CompletableFuture.completedFuture(null);
     }
 
+    /**
+     * Resilience4j fallback for {@link #simulateMovement}: instead of letting
+     * the exception propagate, mark the elevator FAULT so the watchdog job
+     * can pick it up for auto-recovery later. Signature must mirror the
+     * original method plus a trailing Throwable, per Resilience4j convention.
+     */
     @SuppressWarnings("unused")
     private CompletableFuture<Void> simulateMovementFallback(Long elevatorId, Throwable t) {
         log.warn("Circuit breaker fallback triggered for elevator {}: {}", elevatorId, t.getMessage());
@@ -133,6 +167,7 @@ public class ElevatorService {
 
     // ---------- Fault detection & auto recovery ----------
 
+    /** Marks an elevator as faulted/unhealthy - stops it being selected by the scheduler until repaired. */
     @Transactional
     @CacheEvict(value = "elevatorStatus", allEntries = true)
     public Elevator markFault(Long elevatorId) {
@@ -180,12 +215,17 @@ public class ElevatorService {
 
     // ---------- Traffic-based route optimization ----------
 
+    /**
+     * Batch optimization pass (admin-triggered): counts pending requests
+     * per floor to find the highest-traffic floors, then pre-positions
+     * the currently-idle elevators toward the busiest ones (nearest idle
+     * elevator to each hot floor), so the next call there gets served faster.
+     */
     public List<ElevatorStatusDTO> optimizeRoutes() {
-        // Batch optimization: group idle elevators toward floors with the most
-        // pending requests (highest-traffic floors first) for pre-positioning.
         List<Elevator> elevators = elevatorRepository.findAll();
         List<ElevatorRequest> pending = requestRepository.findAll();
 
+        // Group pending requests by floor and rank floors by call volume, descending.
         pending.stream()
                 .collect(java.util.stream.Collectors.groupingBy(ElevatorRequest::getRequestFloor, java.util.stream.Collectors.counting()))
                 .entrySet().stream()
@@ -211,6 +251,7 @@ public class ElevatorService {
 
     // ---------- Logs (paginated) ----------
 
+    /** Backs GET /api/elevators/logs - returns the Kafka-consumer-written audit trail, newest first. */
     public Page<ElevatorLog> getLogs(Pageable pageable) {
         return logRepository.findAllByOrderByTimestampDesc(pageable);
     }

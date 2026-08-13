@@ -7,6 +7,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+/**
+ * Publishes a {@link com.example.elevator.dto.MovementEvent} to Kafka every
+ * time {@link ElevatorService#simulateMovement} advances an elevator. This
+ * decouples "an elevator moved" from "write that fact to the audit log" -
+ * the log write happens asynchronously on the consumer side
+ * ({@link KafkaMovementConsumer}), keeping the simulate endpoint fast.
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor

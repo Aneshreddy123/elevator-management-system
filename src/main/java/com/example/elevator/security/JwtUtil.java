@@ -13,6 +13,12 @@ import java.util.Date;
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * Issues and validates HMAC-SHA256-signed JWTs carrying the username
+ * (subject) and role (custom claim). The signing secret and expiry are
+ * externalized to app.jwt.secret / app.jwt.expiration-ms so they can be
+ * overridden per environment (see docker-compose.yml).
+ */
 @Component
 public class JwtUtil {
 

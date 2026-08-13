@@ -10,6 +10,10 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Behavioral tests for the MinHeap dispatch algorithm: proves nearest-wins,
+ * direction affinity, maintenance/fault exclusion, and load balancing.
+ */
 class ElevatorSchedulingServiceTest {
 
     private ElevatorSchedulingService schedulingService;

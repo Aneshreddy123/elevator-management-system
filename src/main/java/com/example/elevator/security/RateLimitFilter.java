@@ -19,6 +19,11 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Component
 public class RateLimitFilter extends OncePerRequestFilter {
+    // Note: buckets are kept in-memory per app instance. Fine for a single
+    // instance / demo deployment; for a multi-instance deployment this
+    // should be backed by Redis (Bucket4j ships a Redis proxy-manager)
+    // so limits are enforced consistently across instances.
+
 
     @Value("${app.rate-limit.capacity:30}")
     private int capacity;

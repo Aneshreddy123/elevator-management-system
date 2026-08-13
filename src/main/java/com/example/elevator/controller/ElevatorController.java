@@ -21,6 +21,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * REST layer for the 7 elevator endpoints required by the assignment spec.
+ * Thin by design - all real logic lives in {@link ElevatorService}; this
+ * class just validates input, maps HTTP verbs/paths to service calls, and
+ * picks response statuses. Role enforcement (admin-only routes) happens
+ * declaratively in {@link com.example.elevator.security.SecurityConfig},
+ * not here.
+ */
 @RestController
 @RequestMapping("/api/elevators")
 @RequiredArgsConstructor

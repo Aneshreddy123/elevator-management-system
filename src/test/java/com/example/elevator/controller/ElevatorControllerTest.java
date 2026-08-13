@@ -26,6 +26,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = ElevatorController.class)
 @AutoConfigureMockMvc(addFilters = false) // disable security filters - this slice tests controller logic only;
                                             // role-based access control itself is covered by manual/integration testing
+/**
+ * {@code @WebMvcTest} slice tests for the controller layer, with the
+ * service mocked out and security filters disabled (addFilters = false)
+ * since this class tests request/response mapping, not authorization -
+ * role-based access control is exercised separately via manual/integration
+ * testing (see README).
+ */
 class ElevatorControllerTest {
 
     @Autowired

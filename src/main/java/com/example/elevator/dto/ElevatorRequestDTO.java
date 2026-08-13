@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/** Request body for POST /api/elevators/request (a passenger call). */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
